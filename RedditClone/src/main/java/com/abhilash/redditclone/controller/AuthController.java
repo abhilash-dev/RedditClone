@@ -1,5 +1,7 @@
 package com.abhilash.redditclone.controller;
 
+import com.abhilash.redditclone.dto.AuthenticationResponse;
+import com.abhilash.redditclone.dto.LoginRequest;
 import com.abhilash.redditclone.dto.RegisterRequest;
 import com.abhilash.redditclone.service.AuthService;
 import lombok.AllArgsConstructor;
@@ -24,5 +26,10 @@ public class AuthController {
     public ResponseEntity<String> verify(@PathVariable String token) {
         authService.verifyAndEnableUser(token);
         return new ResponseEntity<>("User verified and enabled successfully", HttpStatus.OK);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody LoginRequest loginRequest) {
+        return new ResponseEntity<>(authService.login(loginRequest), HttpStatus.OK);
     }
 }
