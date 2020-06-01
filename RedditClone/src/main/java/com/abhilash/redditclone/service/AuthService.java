@@ -1,12 +1,15 @@
 package com.abhilash.redditclone.service;
 
 import com.abhilash.redditclone.dto.RegisterRequest;
+import com.abhilash.redditclone.exception.InvalidTokenException;
+import com.abhilash.redditclone.exception.InvalidUsernameException;
 import com.abhilash.redditclone.model.NotificationEmail;
 import com.abhilash.redditclone.model.User;
 import com.abhilash.redditclone.model.VerificationToken;
 import com.abhilash.redditclone.repo.UserRepo;
 import com.abhilash.redditclone.repo.VerificationTokenRepo;
 import lombok.AllArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,5 +51,18 @@ public class AuthService {
 
         verificationTokenRepo.save(verificationToken);
         return token;
+    }
+
+    public void verifyAndEnableUser(String token) {
+        VerificationToken verificationToken = verificationTokenRepo.findByToken(token).orElseThrow(() -> new InvalidTokenException("Invalid token"));
+        fetchUserAndEnable(verificationToken);
+    }
+
+    @Transactional
+    void fetchUserAndEnable(VerificationToken verificationToken) {
+        String username = verificationToken.getUser().getUsername();
+        User user = userRepo.findByUsername(username).orElseThrow(() -> new InvalidUsernameException("Invalid username"));
+        user.setEnabled(true);
+        userRepo.save(user);
     }
 }
